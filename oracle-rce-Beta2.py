@@ -90,7 +90,7 @@ def CreatePLSQL(cur,usr):
 		          try {
 		            br_in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 		            String buff = null;
-                    System.setOut(ps);
+		            //System.setOut(ps);
 		            while ((buff = br_in.readLine()) != null) {
 		              System.out.println(buff);
 		              try {} catch(Exception e) {}
