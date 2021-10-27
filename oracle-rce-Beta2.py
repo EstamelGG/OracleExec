@@ -158,6 +158,7 @@ def CreatePLSQL(cur,usr):
 		  DBMS_JAVA.grant_permission(l_schema, 'java.io.FilePermission', '<<ALL FILES>>', 'read ,write, execute, delete');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
+		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'getenv.SystemRoot', '');
 		END;
 	"""%user
 
