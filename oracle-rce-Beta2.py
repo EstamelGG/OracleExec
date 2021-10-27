@@ -32,6 +32,14 @@ def login(user,pwd,host,port,sid):
 	except Exception as e:
 		error(e)
 	
+def getPlatform(cur):
+	try:
+		query = "select platform_name from v$database"
+		cur.execute(query)
+		result = cur.fetchone()
+		normal("OS Platform:%s"%result)
+	except Exception as e:
+		error(e)
 
 #disable JAVA_JIT
 def JAVA_JIT(cur):
@@ -100,7 +108,7 @@ def CreatePLSQL(cur):
 		            br_err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 		            String buff = null;
 		            while ((buff = br_err.readLine()) != null) {
-		              System.out.println(buff);
+		              System.out.println("Process err :" + buff);
 		              try {} catch(Exception e) {}
 		            }
 		            br_err.close();
@@ -244,6 +252,7 @@ normal("Target: %s:%s/%s"%(host,port,sid))
 #login and others
 db = login(user,pwd,host,port,sid)
 cur = db.cursor()
+getPlatform(cur)
 signal.signal(signal.SIGINT, quit)
 signal.signal(signal.SIGTERM, quit)
 JAVA_JIT(cur)
