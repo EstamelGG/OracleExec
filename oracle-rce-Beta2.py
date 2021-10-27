@@ -143,8 +143,6 @@ def CreatePLSQL(cur):
 		  DBMS_JAVA.grant_permission(l_schema, 'java.io.FilePermission', '<<ALL FILES>>', 'read ,write, execute, delete');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
-		  DBMS_OUTPUT.enable(1000000);
-		  DBMS_JAVA.set_output(1000000);
 		END;
 	"""
 
@@ -153,7 +151,11 @@ def CreatePLSQL(cur):
 		normal("Java Created")
 		cur.execute(query2)
 		normal("Procedure Created")
-		cur.execute(query3)
+		try:
+			cur.execute(query3)
+			normal("Permission Granted")
+		except:
+			pass
 		cur.callproc("dbms_output.enable", (1024,))
 		cur.callproc("dbms_java.set_output",(100000,))
 		normal("Enable OutPut")
@@ -254,8 +256,3 @@ while True:
 dropproc(cur)
 print()
 warning("Procedure Dropped")
-
-
-
-
-
