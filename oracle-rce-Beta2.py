@@ -69,7 +69,7 @@ def CreatePLSQL(cur,usr):
 		      String[] finalCommand;
 		      if (isWindows()) {
 		        finalCommand = new String[4];
-		        finalCommand[0] = "C://windows//system32//cmd.exe";    // Windows XP/2003
+		        finalCommand[0] = "C:\\\\windows\\\\system32\\\\cmd.exe";
 		        finalCommand[1] = "/y";
 		        finalCommand[2] = "/c";
 		        finalCommand[3] = command;
@@ -83,13 +83,14 @@ def CreatePLSQL(cur,usr):
 		  
 		      final Process pr = Runtime.getRuntime().exec(finalCommand);
 		      pr.waitFor();
-
+		      //final PrintStream ps = new PrintStream("C:\\\\users\\\\public\\\\log.txt"); // Write log
 		      new Thread(new Runnable(){
 		        public void run() {
 		          BufferedReader br_in = null;
 		          try {
 		            br_in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 		            String buff = null;
+                    System.setOut(ps);
 		            while ((buff = br_in.readLine()) != null) {
 		              System.out.println(buff);
 		              try {} catch(Exception e) {}
@@ -159,8 +160,10 @@ def CreatePLSQL(cur,usr):
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'getenv.SystemRoot', '');
+          DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'setIO', '' );
 		END;
 	"""%user
+    #setIO: read and write file
 
 	try:
 		cur.execute(query1)
