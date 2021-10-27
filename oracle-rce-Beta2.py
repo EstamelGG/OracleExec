@@ -100,7 +100,7 @@ def CreatePLSQL(cur):
 		            br_err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 		            String buff = null;
 		            while ((buff = br_err.readLine()) != null) {
-		              System.out.println("Process err :" + buff);
+		              System.out.println(buff);
 		              try {} catch(Exception e) {}
 		            }
 		            br_err.close();
