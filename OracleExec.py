@@ -166,10 +166,11 @@ def CreatePLSQL(platform,charset,cur,role):
                       if(file.exists()){file.delete();}
 		      String[] finalCommand;
 		      String[] initialCommand;
-		      initialCommand = new String[3];
+		      initialCommand = new String[4];
                       initialCommand[0] = "cmd.exe";
-                      initialCommand[1] = "/c";
-                      initialCommand[2] = "C:\\\\windows\\\\system32\\\\cmd.exe /y /C "+"\\""+command+">c:\\\\users\\\\public\\\\f0f7f381d3dc9254b0e19a1c42d8325c-oraclexec.l0g 2>&1\\"";
+                      initialCommand[1] = "/y";
+                      initialCommand[2] = "/c";
+                      initialCommand[3] = "C:\\\\windows\\\\system32\\\\cmd.exe /y /C "+"\\""+command+">c:\\\\users\\\\public\\\\f0f7f381d3dc9254b0e19a1c42d8325c-oraclexec.l0g 2>&1\\"";
 		      final Process pr = Runtime.getRuntime().exec(initialCommand);
 		      pr.waitFor();
               
