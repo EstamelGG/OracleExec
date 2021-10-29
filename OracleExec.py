@@ -101,15 +101,16 @@ def CreatePLSQL(platform,charset,cur,role):
 		      
 		      new Thread(new Runnable(){
 		        public void run() {
-		          InputStreamReader isr = null;
+		          BufferedReader br_in = null;
 		          try {
-		            isr = new InputStreamReader(pr.getInputStream(),"%s");
-		            StringBuffer sb = new StringBuffer();
-		                while (isr.ready()) {
-		                    sb.append((char) isr.read());
-		                }
-		            System.out.println(sb.toString());
-		            isr.close();
+		            br_in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+		            String buff = null;
+		            //System.setOut(ps);
+		            while ((buff = br_in.readLine()) != null) {
+		              System.out.println(buff);
+		              try {} catch(Exception e) {}
+		            }
+		            br_in.close();
 		          }
 		          catch (IOException ioe) {
 		            System.out.println("Exception caught printing process output.");
@@ -117,7 +118,7 @@ def CreatePLSQL(platform,charset,cur,role):
 		          }
 		          finally {
 		            try {
-		              isr.close();
+		              br_in.close();
 		            } catch (Exception ex) {}
 		          }
 		        }
@@ -125,15 +126,15 @@ def CreatePLSQL(platform,charset,cur,role):
 		  
 		      new Thread(new Runnable(){
 		        public void run() {
-		          InputStreamReader isr_err = null;
+		          BufferedReader br_err = null;
 		          try {
-		            isr_err = new InputStreamReader(pr.getErrorStream(),"%s");
-		            StringBuffer sb_err = new StringBuffer();
-		            while (isr_err.ready()) {
-		                    sb_err.append((char) isr_err.read());
-		                }
-		            System.out.println(sb_err.toString());
-		            isr_err.close();
+		            br_err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+		            String buff = null;
+		            while ((buff = br_err.readLine()) != null) {
+		              System.out.println(buff);
+		              try {} catch(Exception e) {}
+		            }
+		            br_err.close();
 		          }
 		          catch (IOException ioe) {
 		            System.out.println("Exception caught printing process error.");
@@ -141,7 +142,7 @@ def CreatePLSQL(platform,charset,cur,role):
 		          }
 		          finally {
 		            try {
-		              isr_err.close();
+		              br_err.close();
 		            } catch (Exception ex) {}
 		          }
 		        }
