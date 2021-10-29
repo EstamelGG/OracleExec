@@ -36,6 +36,7 @@ def login(user,pwd,host,port,sid):
 		return db
 	except Exception as e:
 		error(e)
+		sys.exit()
 	
 def getPlatform(cur):
 	try:
